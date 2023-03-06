@@ -1,7 +1,3 @@
-try{
-require("dotenv").config();
-}catch(error){
-}
 const { REST, Routes } = require("discord.js");
 
 const { DISCORD_TOKEN, APPLICATION_ID, GUILD_ID } = process.env;

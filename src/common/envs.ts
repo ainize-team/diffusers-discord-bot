@@ -1,6 +1,6 @@
 import { NODE_ENVS } from './constants';
 
-const ENV_LIST = ['BOT_TOKEN', 'GUILD_ID', 'ENDPOINT', 'UPSCALE_ENDPOINT'];
+const ENV_LIST = ['NODE_ENV', 'DISCORD_TOKEN', 'APPLICATION_ID', 'GUILD_ID'];
 
 const envs: { [key: string]: string } = {};
 

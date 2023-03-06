@@ -19,7 +19,7 @@ const initializeBot = () => {
     ],
   });
   Object.values(commandHandlers).forEach((command: Command) => {
-    discordCommands.set(`${command.name}`, command.getCommand());
+    discordCommands.set(command.name, command.getCommand());
     commandNames.push(command.name);
   });
   client.login(BOT_TOKEN);

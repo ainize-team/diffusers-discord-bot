@@ -4,7 +4,7 @@ import Command from './commands/commands';
 import envs from './common/envs';
 import { IDiscordCommand } from './types/discord';
 
-const { BOT_TOKEN } = envs;
+const { DISCORD_TOKEN } = envs;
 
 const commandNames: Array<string> = [];
 const discordCommands = new Collection<string, IDiscordCommand>();
@@ -22,6 +22,6 @@ const initializeBot = () => {
     discordCommands.set(command.name, command.getCommand());
     commandNames.push(command.name);
   });
-  client.login(BOT_TOKEN);
+  client.login(DISCORD_TOKEN);
 };
 initializeBot();

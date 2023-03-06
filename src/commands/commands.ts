@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
-import { IDiscordCommand, IExecuteFunc } from '../types/discord';
+import { IDiscordCommand, IExecuteFunc } from '../types';
 
 export default class Command {
   public name: string;

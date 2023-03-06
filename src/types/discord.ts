@@ -1,6 +1,6 @@
 import { Client, Collection, CommandInteraction } from 'discord.js';
 
-import { SlashCommandBuilder, SlashCommandSubcommandsOnlyBuilder } from '@discordjs/builders';
+import { SlashCommandBuilder } from '@discordjs/builders';
 
 export type IExecuteFunc = (interaction: CommandInteraction) => Promise<unknown>;
 

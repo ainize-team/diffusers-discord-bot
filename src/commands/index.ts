@@ -1,4 +1,4 @@
 export * from './generate';
 export * from './help';
-export * from './parmas';
+export * from './params';
 export * from './result';

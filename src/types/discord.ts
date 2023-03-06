@@ -12,12 +12,6 @@ export interface IExecuteProps {
 }
 
 export interface IDiscordCommand {
-  data: SlashCommandSubcommandsOnlyBuilder | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
-  execute: IExecuteFunc;
-}
-
-export interface IDiscordSubCommand {
-  name: string;
-  addSubcommand: (slashCommandBuilder: SlashCommandBuilder) => void;
+  data: SlashCommandBuilder;
   execute: IExecuteFunc;
 }

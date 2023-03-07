@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { errorHandler } from './error';
+import { customErrorHandler } from './error';
 
 export const getRequest = async (endpoint: string) => {
   try {
@@ -15,7 +15,7 @@ export const getRequest = async (endpoint: string) => {
       data: res.data,
     };
   } catch (error) {
-    const errorMessage = errorHandler(error);
+    const errorMessage = customErrorHandler(error);
     return {
       isSuccess: false,
       data: errorMessage,

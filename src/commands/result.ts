@@ -28,7 +28,10 @@ const result = async (interaction: CommandInteraction) => {
         .setColor(Colors.Orange)
         .setTitle('Task is not finished')
         .setDescription(`Current status : ${images.status}`);
-      await interaction.reply({ embeds: [embed] });
+      await interaction.reply({
+        content: `${interaction.user} The result of requested task is below.`,
+        embeds: [embed],
+      });
       return;
     }
 
@@ -63,7 +66,10 @@ const result = async (interaction: CommandInteraction) => {
       .setDescription(description)
       .setImage(images.result.grid.url);
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({
+      content: `${interaction.user} The result of requested task is below.`,
+      embeds: [embed],
+    });
   } catch (error) {
     const errorMessage = customErrorHandler(error);
     const embed = new EmbedBuilder()

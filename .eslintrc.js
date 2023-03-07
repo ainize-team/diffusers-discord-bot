@@ -48,7 +48,6 @@ module.exports = {
         avoidEscape: true,
       },
     ],
-    'import/no-extraneous-dependencies': 'off',
     // Disabling because this rule is extremely slow.
     'import/no-cycle': 'off',
     // Disabling because this rule is slow and not a common violation.

@@ -2,7 +2,7 @@ import { CommandInteraction, EmbedBuilder, Colors } from 'discord.js';
 import Command from './commands';
 import { getRequest } from '../common/utils';
 import envs from '../common/envs';
-import { ResponseStatus, ErrorTitle, WarningMessages } from '../common/enums';
+import { ResponseStatus, ErrorTitle, WarningMessages, ErrorMessages } from '../common/enums';
 import { customErrorHandler } from '../common/error';
 
 const { ENDPOINT } = envs;
@@ -56,7 +56,7 @@ const result = async (interaction: CommandInteraction) => {
     let color = Colors.Green as number;
     if (warningMessages.length !== 0) {
       warningMessages.forEach((message) => {
-        description += `\n${message}`;
+        description += `${message}\n`;
       });
       color = Colors.Orange;
     }
@@ -71,11 +71,9 @@ const result = async (interaction: CommandInteraction) => {
       embeds: [embed],
     });
   } catch (error) {
-    const errorMessage = customErrorHandler(error);
-    const embed = new EmbedBuilder()
-      .setColor(Colors.Red)
-      .setTitle(ErrorTitle.UNKNOWN)
-      .setDescription(`Error: ${errorMessage}`);
+    let errorMessage = ErrorMessages.UNKNOWN as string;
+    errorMessage += `Error: ${customErrorHandler(error)}`;
+    const embed = new EmbedBuilder().setColor(Colors.Red).setTitle(ErrorTitle.UNKNOWN).setDescription(errorMessage);
     await interaction.reply({ embeds: [embed] });
   }
 };

@@ -11,5 +11,9 @@ export enum ErrorTitle {
 }
 
 export enum WarningMessages {
-  NSFW = 'Potential NSFW content was detected in one or more images.\nIf you want to see the original image, press the button below.',
+  NSFW = 'Potential NSFW content was detected in one or more images.\nIf you want to see the original image, press the button below.\n',
+}
+
+export enum ErrorMessages {
+  UNKNOWN = 'Unknown error occurred.\nPlease share the error with our community manager.\n',
 }

@@ -1,8 +1,9 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, Colors } from 'discord.js';
 import Command from './commands';
 import { customErrorHandler } from '../common/error';
 import envs from '../common/envs';
 import { getRequest } from '../common/utils';
+import { ErrorTitle } from '../common/enums';
 
 const { ENDPOINT } = envs;
 
@@ -31,11 +32,11 @@ const params = async (interaction: CommandInteraction) => {
 
   if (!paramsText) {
     const embed = new EmbedBuilder()
-      .setTitle('Wrong Task ID Error')
+      .setColor(Colors.Red)
+      .setTitle(ErrorTitle.WRONG_TASK_ID)
       .setDescription(
         `Requested task was not found. Your task id(${taskId}) may be wrong. Please input correct task id.`,
-      )
-      .setColor(0xed4245);
+      );
     await interaction.reply({ embeds: [embed] });
     return;
   }

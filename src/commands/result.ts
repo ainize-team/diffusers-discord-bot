@@ -47,12 +47,13 @@ const result = async (interaction: CommandInteraction) => {
       return;
     }
     const params = paramsResponse.data;
+
     const warningMessages = [];
     if (images.result.grid.is_filtered) {
       warningMessages.push(WarningMessages.NSFW);
     }
 
-    let description = `task_id: ${taskId}`;
+    let description = `task_id: ${taskId}\n`;
     let color = Colors.Green as number;
     if (warningMessages.length !== 0) {
       warningMessages.forEach((message) => {

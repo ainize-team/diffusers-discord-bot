@@ -96,6 +96,7 @@ const getHelpText = (): string => {
 };
 
 const help = async (interaction: CommandInteraction) => {
+  if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   const helpText = getHelpText();
   await interaction.reply(helpText);
 };

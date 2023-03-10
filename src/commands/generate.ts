@@ -1,9 +1,35 @@
-import { CommandInteraction } from 'discord.js';
+import { Colors, CommandInteraction, EmbedBuilder } from 'discord.js';
 import Command from './commands';
-import { ModelID, ModelName, SchedulerName, SchedulerID } from '../common/enums';
-import { randomUInt32 } from '../common/utils';
+import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus } from '../common/enums';
+import { randomUInt32, postRequest, getRequest } from '../common/utils';
+import envs from '../common/envs';
 
+const { ENDPOINT } = envs;
+
+const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, timeout = 300000) => {
+  let intervalId: any;
+  const timeoutPromise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      clearInterval(intervalId);
+      reject(new Error('Timeout'));
+    }, timeout);
+  });
+  const statusPromise = new Promise((resolve, reject) => {
+    intervalId = setInterval(async () => {
+      const res = await getRequest(`${ENDPOINT}/tasks/${taskId}/images`);
+      if (!res.isSuccess) {
+        reject(new Error('Error'));
+      }
+      if (res.data.status !== prevStatus) {
+        clearInterval(intervalId); // setInterval 타이머 종료
+        resolve(res.data);
+      }
+    }, 1000);
+  });
+  return Promise.race([timeoutPromise, statusPromise]);
+};
 const generate = async (interaction: CommandInteraction) => {
+  if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   const requestParams: { [key: string]: string | number | boolean | undefined } = {};
   interaction.options.data.forEach((data) => {
     requestParams[data.name] = data.value;
@@ -12,7 +38,7 @@ const generate = async (interaction: CommandInteraction) => {
     prompt,
     steps = 30,
     seed = randomUInt32(),
-    width = 767,
+    width = 768,
     height = 768,
     guidance_scale = 7,
     num_images_per_prompt = 2,
@@ -20,9 +46,62 @@ const generate = async (interaction: CommandInteraction) => {
     scheduler = SchedulerID.DDIM,
     negative_prompt = '',
   } = requestParams;
-  interaction.reply(
-    `${prompt} ${steps} ${seed} ${width} ${height} ${guidance_scale} ${num_images_per_prompt} ${model} ${scheduler} ${negative_prompt}`,
-  );
+  await interaction.deferReply();
+  const discord = {
+    // TODO(@byeongal) update api server [ remove ]
+    user_id: 'string',
+    guild_id: 'string',
+    channel_id: 'string',
+    message_id: 'string',
+  };
+  const params = {
+    prompt,
+    negative_prompt,
+    steps,
+    seed,
+    width,
+    height,
+    images: num_images_per_prompt, // TODO(@byeongal) update api server [ change variable name ]
+    guidance_scale,
+    model_id: model, // TODO(@byeongal) update api server [ change variable name ]
+    scheduler_type: scheduler, // TODO(@byeongal) update api server [ change variable name ]
+  };
+  const data = { discord, params };
+  const res = await postRequest(`${ENDPOINT}/generate`, data);
+  if (!res.isSuccess) {
+    interaction.editReply('Failed To Request');
+    return;
+  }
+  const taskId = res.data.task_id;
+  const user = interaction.user.toString();
+  const messageEmbed = new EmbedBuilder()
+    .setColor(Colors.Green)
+    .setTitle(`Prompt : ${prompt}`)
+    .setDescription(`Task Id : ${taskId}`);
+  await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
+  // PENDING -> ASSIGNED
+  let result = (await waitForStatusChange(ResponseStatus.PENDING, taskId)) as {
+    status: string;
+    updated_at: number;
+    result: any;
+  };
+  await interaction.editReply({
+    embeds: [messageEmbed],
+    content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ASSIGNED}`,
+  });
+  // ASSIGNED -> COMPLETED
+  if (result.status === ResponseStatus.ASSIGNED) {
+    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, taskId)) as {
+      status: string;
+      updated_at: number;
+      result: any;
+    };
+  }
+  messageEmbed.setImage(result.result.grid.url);
+  await interaction.editReply({
+    embeds: [messageEmbed],
+    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+  });
 };
 
 export const generateCommand = new Command('generate', 'Generate Image', generate);

@@ -1,6 +1,6 @@
 export enum ResponseStatus {
   PENDING = 'pending',
-  ASSIGNED = 'assngiend',
+  ASSIGNED = 'assigned',
   COMPLETED = 'completed',
   ERROR = 'error',
 }

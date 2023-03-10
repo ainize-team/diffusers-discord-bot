@@ -22,3 +22,5 @@ export const getRequest = async (endpoint: string) => {
     };
   }
 };
+
+export const randomUInt32 = () => Math.floor(Math.random() * 4294967296);

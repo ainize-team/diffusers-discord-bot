@@ -26,7 +26,7 @@ export interface IStringCommandOption extends ICommandOption {
   minLength?: number;
 }
 
-export interface IIntegerCommandOption extends ICommandOption {
+export interface INumberCommandOption extends ICommandOption {
   choices?: { name: string; value: number }[];
   maxValue?: number;
   minValue?: number;

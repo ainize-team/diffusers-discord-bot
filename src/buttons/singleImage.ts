@@ -2,7 +2,7 @@ import { ButtonInteraction, EmbedBuilder, Colors } from 'discord.js';
 import { getRequest } from '../common/utils';
 import envs from '../common/envs';
 import Button from './buttons';
-import { ErrorTitle, WarningMessages } from '../common/enums';
+import { ErrorTitle } from '../common/enums';
 
 const { ENDPOINT } = envs;
 

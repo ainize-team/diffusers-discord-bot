@@ -3,8 +3,9 @@ import Command from './commands';
 import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus } from '../common/enums';
 import { randomUInt32, postRequest, getRequest } from '../common/utils';
 import envs from '../common/envs';
+import { NODE_ENVS } from '../common/constants';
 
-const { ENDPOINT } = envs;
+const { ENDPOINT, NODE_ENV } = envs;
 
 const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, timeout = 300000) => {
   let intervalId: any;
@@ -99,19 +100,30 @@ const generate = async (interaction: CommandInteraction) => {
   }
   messageEmbed.setImage(result.result.grid.url);
 
-  const buttons: Array<ButtonBuilder> = [];
+  const buttons0: Array<ButtonBuilder> = [];
+  const buttons1: Array<ButtonBuilder> = [];
   Object.keys(result.result).forEach((key: string) => {
     if (key !== 'grid') {
-      buttons.push(
+      buttons0.push(
         new ButtonBuilder().setCustomId(`singleImage@${taskId}@${key}`).setLabel(key).setStyle(ButtonStyle.Primary),
       );
     }
   });
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
+  const twitterBaseURL = 'https://twitter.com/intent/tweet';
+  const imageURL =
+    NODE_ENV === NODE_ENVS.DEV
+      ? `https://aindao-text-to-art-dev.ainetwork.xyz/${taskId}`
+      : `https://aindao-text-to-art.ainetwork.xyz/${taskId}`;
+  const mainText =
+    "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
+  const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${imageURL}`;
+  buttons1.push(new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL));
+  const row0 = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
+  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons1);
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
-    components: [row],
+    components: [row0, row1],
   });
 };
 

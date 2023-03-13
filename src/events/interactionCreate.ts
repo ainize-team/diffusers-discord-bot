@@ -14,10 +14,13 @@ export const interactionCreate = () => ({
       try {
         await command.execute(interaction);
       } catch (error) {
-        await interaction.reply({
-          content: 'There was an error while executing this command!',
-          ephemeral: true,
-        });
+        console.error(JSON.stringify(error));
+        if (!interaction.replied) {
+          await interaction.reply({
+            content: 'There was an error while executing this command!',
+            ephemeral: true,
+          });
+        }
       }
     } else if (interaction.isButton()) {
       const { customId } = interaction;
@@ -30,10 +33,13 @@ export const interactionCreate = () => ({
       try {
         await button.execute(interaction, options);
       } catch (error) {
-        await interaction.reply({
-          content: 'There was an error while executing this button!',
-          ephemeral: true,
-        });
+        console.error(JSON.stringify(error));
+        if (!interaction.replied) {
+          await interaction.reply({
+            content: 'There was an error while executing this button!',
+            ephemeral: true,
+          });
+        }
       }
     }
   },

@@ -29,6 +29,30 @@ const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, t
   });
   return Promise.race([timeoutPromise, statusPromise]);
 };
+
+const waitForTxStatusChange = async (taskId: string, timeout = 300000) => {
+  let intervalId: any;
+  const timeoutPromise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      clearInterval(intervalId);
+      reject(new Error('Timeout'));
+    }, timeout);
+  });
+  const statusPromise = new Promise((resolve, reject) => {
+    intervalId = setInterval(async () => {
+      const res = await getRequest(`${ENDPOINT}/tasks/${taskId}/tx-hash`);
+      if (!res.isSuccess) {
+        reject(new Error('Error'));
+      }
+      if (res.data.status === ResponseStatus.COMPLETED && ResponseStatus.COMPLETED in res.data.tx_hash) {
+        clearInterval(intervalId);
+        resolve(res.data);
+      }
+    }, 1000);
+  });
+  return Promise.race([timeoutPromise, statusPromise]);
+};
+
 const generate = async (interaction: CommandInteraction) => {
   if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   const requestParams: { [key: string]: string | number | boolean | undefined } = {};
@@ -101,7 +125,6 @@ const generate = async (interaction: CommandInteraction) => {
   messageEmbed.setImage(result.result.grid.url);
 
   const buttons0: Array<ButtonBuilder> = [];
-  const buttons1: Array<ButtonBuilder> = [];
   Object.keys(result.result).forEach((key: string) => {
     if (key !== 'grid') {
       buttons0.push(
@@ -117,9 +140,24 @@ const generate = async (interaction: CommandInteraction) => {
   const mainText =
     "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
   const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${imageURL}`;
-  buttons1.push(new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL));
   const row0 = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
-  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons1);
+  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL),
+  );
+  await interaction.editReply({
+    embeds: [messageEmbed],
+    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    components: [row0, row1],
+  });
+  const txResult = (await waitForTxStatusChange(taskId)) as {
+    status: string;
+    tx_hash: { [status: string]: string };
+    updated_at: number;
+  };
+  const prefix = NODE_ENV === NODE_ENVS.DEV ? 'testnet-' : '';
+  const txHash = txResult.tx_hash[ResponseStatus.COMPLETED];
+  const insightURL = `https://${prefix}insight.ainetwork.ai/transactions/${txHash}`;
+  row1.addComponents(new ButtonBuilder().setLabel('View on Insight').setStyle(ButtonStyle.Link).setURL(insightURL));
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,

@@ -106,7 +106,10 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   Object.keys(result.result).forEach((key: string) => {
     if (key !== 'grid') {
       buttons0.push(
-        new ButtonBuilder().setCustomId(`singleImage@${taskId}@${key}`).setLabel(key).setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(`singleImage@${taskId}@${key}`)
+          .setLabel(`#${key}`)
+          .setStyle(ButtonStyle.Secondary),
       );
     }
   });

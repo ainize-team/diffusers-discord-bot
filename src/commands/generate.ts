@@ -128,7 +128,10 @@ const generate = async (interaction: CommandInteraction) => {
   Object.keys(result.result).forEach((key: string) => {
     if (key !== 'grid') {
       buttons0.push(
-        new ButtonBuilder().setCustomId(`singleImage@${taskId}@${key}`).setLabel(key).setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(`singleImage@${taskId}@${key}`)
+          .setLabel(`#${key}`)
+          .setStyle(ButtonStyle.Secondary),
       );
     }
   });

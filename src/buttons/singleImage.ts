@@ -31,20 +31,8 @@ const getSingleImage = async (interaction: ButtonInteraction, options: Array<str
   }
 
   const params = paramsResponse.data;
-
-  const warningMessages = [];
-  if (images.result.grid.is_filtered) {
-    warningMessages.push(WarningMessages.NSFW);
-  }
-
-  let description = `task_id: ${taskId}\n`;
-  let color = Colors.Green as number;
-  if (warningMessages.length !== 0) {
-    warningMessages.forEach((message) => {
-      description += `${message}\n`;
-    });
-    color = Colors.Orange;
-  }
+  const description = `task_id: ${taskId}\n`;
+  const color = Colors.Green as number;
   const imageURL = images.result[imageNo].is_filtered ? images.result[imageNo].origin_url : images.result[imageNo].url;
 
   const embed = new EmbedBuilder()

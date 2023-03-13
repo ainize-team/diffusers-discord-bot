@@ -46,3 +46,17 @@ export const postRequest = async (endpoint: string, data: unknown) => {
 };
 
 export const randomUInt32 = () => Math.floor(Math.random() * 4294967296);
+
+export const parseCustomId = (customId: string, delimiter = '@') => {
+  const splitted = customId.split(delimiter);
+  if (splitted.length < 2) {
+    return {
+      name: splitted[0],
+      options: [],
+    };
+  }
+  return {
+    name: splitted[0],
+    options: splitted.slice(1),
+  };
+};

@@ -1,4 +1,4 @@
-import { Colors, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { Colors, CommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Command from './commands';
 import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus } from '../common/enums';
 import { randomUInt32, postRequest, getRequest } from '../common/utils';
@@ -21,7 +21,7 @@ const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, t
         reject(new Error('Error'));
       }
       if (res.data.status !== prevStatus) {
-        clearInterval(intervalId); // setInterval 타이머 종료
+        clearInterval(intervalId);
         resolve(res.data);
       }
     }, 1000);
@@ -98,14 +98,24 @@ const generate = async (interaction: CommandInteraction) => {
     };
   }
   messageEmbed.setImage(result.result.grid.url);
+
+  const buttons: Array<ButtonBuilder> = [];
+  Object.keys(result.result).forEach((key: string) => {
+    if (key !== 'grid') {
+      buttons.push(
+        new ButtonBuilder().setCustomId(`singleImage@${taskId}@${key}`).setLabel(key).setStyle(ButtonStyle.Primary),
+      );
+    }
+  });
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons);
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    components: [row],
   });
 };
 
 export const generateCommand = new Command('generate', 'Generate Image', generate);
-
 generateCommand.addStringCommandOption({
   name: 'prompt',
   description: 'Type in a full descriptive sentence, as if you were writing a caption for a photo.',

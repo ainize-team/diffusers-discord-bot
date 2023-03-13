@@ -1,5 +1,5 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { IDiscordCommand, IExecuteFunc, INumberCommandOption, IStringCommandOption } from '../types';
+import { SlashCommandBuilder } from 'discord.js';
+import { IDiscordCommand, ICommandExecuteFunc, INumberCommandOption, IStringCommandOption } from '../types';
 
 export default class Command {
   public name: string;
@@ -8,9 +8,9 @@ export default class Command {
 
   private commandBuilder: SlashCommandBuilder;
 
-  private execute: IExecuteFunc;
+  private execute: ICommandExecuteFunc;
 
-  constructor(name: string, description: string, execute: IExecuteFunc) {
+  constructor(name: string, description: string, execute: ICommandExecuteFunc) {
     this.name = name;
     this.description = description;
 

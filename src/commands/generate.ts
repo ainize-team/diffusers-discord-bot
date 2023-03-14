@@ -144,7 +144,7 @@ const generate = async (interaction: CommandInteraction) => {
   // TODO(@byeongal) get message from data base
   const mainText =
     "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
-  const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${imageURL}`;
+  const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${encodeURIComponent(imageURL)}`;
   const row0 = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL),

@@ -1,4 +1,4 @@
-import { ButtonInteraction, EmbedBuilder, Colors } from 'discord.js';
+import { ButtonInteraction, EmbedBuilder, Colors, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { getRequest } from '../common/utils';
 import envs from '../common/envs';
 import Button from './buttons';
@@ -41,10 +41,14 @@ const getSingleImage = async (interaction: ButtonInteraction, options: Array<str
     .setDescription(description)
     .setImage(imageURL);
 
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder().setCustomId(`upscale@${taskId}@${imageNo}`).setLabel('Upscale').setStyle(ButtonStyle.Secondary),
+  );
   await interaction.reply({
     content: `${interaction.user} The result of requested task is below.`,
     embeds: [embed],
     ephemeral: true,
+    components: [row],
   });
 };
 

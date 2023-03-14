@@ -211,14 +211,6 @@ generateCommand.addIntegerCommandOption({
   maxValue: 1024,
 });
 
-generateCommand.addNumberCommandOption({
-  name: 'guidance_scale',
-  description: 'How much the image will be like your prompt. Higher values keep your image closer to your prompt.',
-  isRequired: false,
-  minValue: 0,
-  maxValue: 20,
-});
-
 generateCommand.addIntegerCommandOption({
   name: 'num_images_per_prompt',
   description: 'The number of images to generate per prompt.',
@@ -229,6 +221,14 @@ generateCommand.addIntegerCommandOption({
   })),
   minValue: 1,
   maxValue: 4,
+});
+
+generateCommand.addNumberCommandOption({
+  name: 'guidance_scale',
+  description: 'How much the image will be like your prompt. Higher values keep your image closer to your prompt.',
+  isRequired: false,
+  minValue: 0,
+  maxValue: 20,
 });
 
 generateCommand.addStringCommandOption({
@@ -265,6 +265,13 @@ generateCommand.addStringCommandOption({
       value: ModelID.OPENJOURNEY_V2,
     },
   ],
+});
+
+generateCommand.addStringCommandOption({
+  name: 'negative_prompt',
+  description: 'prompt value that you do not want to see in the resulting image',
+  isRequired: false,
+  maxLength: 250,
 });
 
 generateCommand.addStringCommandOption({
@@ -305,11 +312,4 @@ generateCommand.addStringCommandOption({
       value: SchedulerID.LMS_DISCRETE,
     },
   ],
-});
-
-generateCommand.addStringCommandOption({
-  name: 'negative_prompt',
-  description: 'prompt value that you do not want to see in the resulting image',
-  isRequired: false,
-  maxLength: 250,
 });

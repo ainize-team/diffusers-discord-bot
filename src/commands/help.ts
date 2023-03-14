@@ -11,7 +11,7 @@ const getHelpText = (): string => {
     {
       name: 'steps',
       value: 'How many steps to spend generating (diffusing) your image.',
-      condition: 'integer | min: 1 | max: 100 | default: 50',
+      condition: 'integer | min: 10 | max: 150 | default: 50',
     },
     {
       name: 'seed',

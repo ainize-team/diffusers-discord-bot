@@ -5,6 +5,7 @@ import { ResponseStatus } from '../common/enums';
 import Button from './buttons';
 
 import { NODE_ENVS } from '../common/constants';
+import { ITextToImageResponse } from '../types/\bdiffusers';
 
 const { ENDPOINT, NODE_ENV } = envs;
 
@@ -84,22 +85,14 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
     .setDescription(`Task Id : ${taskId}`);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
-  let result = (await waitForStatusChange(ResponseStatus.PENDING, taskId)) as {
-    status: string;
-    updated_at: number;
-    result: any;
-  };
+  let result = (await waitForStatusChange(ResponseStatus.PENDING, taskId)) as ITextToImageResponse;
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ASSIGNED}`,
   });
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
-    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, taskId)) as {
-      status: string;
-      updated_at: number;
-      result: any;
-    };
+    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, taskId)) as ITextToImageResponse;
   }
   messageEmbed.setImage(result.result.grid.url);
   const buttons0: Array<ButtonBuilder> = [];
@@ -132,6 +125,7 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
     content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
     components: [row0, row1],
   });
+  // TODO(@byeongal) migrate to NFT Server
   const txResult = (await waitForTxStatusChange(taskId)) as {
     status: string;
     tx_hash: { [status: string]: string };

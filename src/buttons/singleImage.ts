@@ -32,7 +32,7 @@ const getSingleImage = async (interaction: ButtonInteraction, options: Array<str
 
   const params = paramsResponse.data;
   const description = `task_id: ${taskId}\n`;
-  const color = Colors.Green as number;
+  const color = Colors.Green;
   const imageURL = images.result[imageNo].is_filtered ? images.result[imageNo].origin_url : images.result[imageNo].url;
 
   const embed = new EmbedBuilder()

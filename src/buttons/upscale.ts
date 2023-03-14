@@ -3,6 +3,7 @@ import { getRequest, postRequest } from '../common/utils';
 import envs from '../common/envs';
 import Button from './buttons';
 import { ErrorTitle, ResponseStatus } from '../common/enums';
+import { IImageToImageResponse } from '../types/\bdiffusers';
 
 const { ENDPOINT, UPSCALE_ENDPOINT } = envs;
 
@@ -69,22 +70,14 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
     .setDescription(`Task Id : ${upscaleTaskId}`);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
-  let result = (await waitForStatusChange(ResponseStatus.PENDING, upscaleTaskId)) as {
-    status: string;
-    updated_at: number;
-    output: any;
-  };
+  let result = (await waitForStatusChange(ResponseStatus.PENDING, upscaleTaskId)) as IImageToImageResponse;
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ASSIGNED}`,
   });
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
-    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, upscaleTaskId)) as {
-      status: string;
-      updated_at: number;
-      output: any;
-    };
+    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, upscaleTaskId)) as IImageToImageResponse;
   }
   messageEmbed.setImage(result.output);
   await interaction.editReply({

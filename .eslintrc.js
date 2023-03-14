@@ -74,6 +74,7 @@ module.exports = {
     'react/jsx-filename-extension': 'off',
     'import/extensions': 'off',
     '@typescript-eslint/ban-ts-ignore': 'off',
+    '@typescript-eslint/naming-convention': 'warn',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-var-requires': 'off',

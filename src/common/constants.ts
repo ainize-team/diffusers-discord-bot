@@ -1,6 +1,5 @@
-const NODE_ENVS: { [key: string]: string } = {
+export const NODE_ENVS: { [key: string]: string } = {
   DEV: 'dev',
   PROD: 'prod',
 };
-
-export { NODE_ENVS };
+export const MAX_ITERATIONS = 300;

@@ -1,18 +1,28 @@
-import { Collection, CommandInteraction } from 'discord.js';
+import { ButtonInteraction, Collection, CommandInteraction, Interaction, SlashCommandBuilder } from 'discord.js';
 
-import { SlashCommandBuilder } from '@discordjs/builders';
+export interface ICommandExecuteFunc {
+  (interaction: CommandInteraction): Promise<unknown>;
+}
 
-export type IExecuteFunc = (interaction: CommandInteraction) => Promise<unknown>;
+export interface IButtonExecuteFunc {
+  (interaction: ButtonInteraction, options: Array<string>): Promise<unknown>;
+}
 
 export interface IExecuteProps {
-  interaction: CommandInteraction;
+  interaction: Interaction;
   commands: Collection<string, IDiscordCommand>;
   commandNames: Array<string>;
+  buttons: Collection<string, IDiscordButton>;
+  buttonNames: Array<string>;
 }
 
 export interface IDiscordCommand {
   data: SlashCommandBuilder;
-  execute: IExecuteFunc;
+  execute: ICommandExecuteFunc;
+}
+
+export interface IDiscordButton {
+  execute: IButtonExecuteFunc;
 }
 
 export interface ICommandOption {
@@ -26,7 +36,7 @@ export interface IStringCommandOption extends ICommandOption {
   minLength?: number;
 }
 
-export interface IIntegerCommandOption extends ICommandOption {
+export interface INumberCommandOption extends ICommandOption {
   choices?: { name: string; value: number }[];
   maxValue?: number;
   minValue?: number;

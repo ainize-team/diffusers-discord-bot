@@ -1,6 +1,6 @@
 import { Colors, CommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Command from './commands';
-import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus } from '../common/enums';
+import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus, WarningMessages } from '../common/enums';
 import { randomUInt32, postRequest, getRequest } from '../common/utils';
 import envs from '../common/envs';
 import { NODE_ENVS } from '../common/constants';
@@ -32,7 +32,7 @@ const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, t
 };
 
 const waitForTxStatusChange = async (taskId: string, timeout = 300000) => {
-  let intervalId: any;
+  let intervalId: NodeJS.Timer;
   const timeoutPromise = new Promise((resolve, reject) => {
     setTimeout(() => {
       clearInterval(intervalId);
@@ -100,10 +100,11 @@ const generate = async (interaction: CommandInteraction) => {
   }
   const taskId = res.data.task_id;
   const user = interaction.user.toString();
+  let description = `task_id: ${taskId}\n`;
   const messageEmbed = new EmbedBuilder()
     .setColor(Colors.Green)
     .setTitle(`Prompt : ${prompt}`)
-    .setDescription(`Task Id : ${taskId}`);
+    .setDescription(description);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
   let result = (await waitForStatusChange(ResponseStatus.PENDING, taskId)) as ITextToImageResponse;
@@ -114,6 +115,10 @@ const generate = async (interaction: CommandInteraction) => {
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
     result = (await waitForStatusChange(ResponseStatus.ASSIGNED, taskId)) as ITextToImageResponse;
+  }
+  if (result.result.grid.is_filtered) {
+    description += `${WarningMessages.NSFW}\n`;
+    messageEmbed.setColor(Colors.Orange).setDescription(description);
   }
   messageEmbed.setImage(result.result.grid.url);
 

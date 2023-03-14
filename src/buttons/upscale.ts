@@ -8,7 +8,7 @@ import { IImageToImageResponse } from '../types/\bdiffusers';
 const { ENDPOINT, UPSCALE_ENDPOINT } = envs;
 
 const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, timeout = 300000) => {
-  let intervalId: any;
+  let intervalId: NodeJS.Timer;
   const timeoutPromise = new Promise((resolve, reject) => {
     setTimeout(() => {
       clearInterval(intervalId);

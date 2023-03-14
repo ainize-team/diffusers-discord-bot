@@ -20,6 +20,8 @@ export const interactionCreate = () => ({
             content: 'There was an error while executing this command!',
             ephemeral: true,
           });
+        } else {
+          await interaction.editReply({ content: 'There was an error while executing this command!' });
         }
       }
     } else if (interaction.isButton()) {
@@ -39,6 +41,8 @@ export const interactionCreate = () => ({
             content: 'There was an error while executing this button!',
             ephemeral: true,
           });
+        } else {
+          await interaction.editReply({ content: 'There was an error while executing this button!' });
         }
       }
     }

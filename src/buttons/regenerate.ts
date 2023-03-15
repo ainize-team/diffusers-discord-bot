@@ -5,7 +5,7 @@ import { ResponseStatus, WarningMessages } from '../common/enums';
 import Button from './buttons';
 
 import { NODE_ENVS } from '../common/constants';
-import { ITextToImageResponse } from '../types/\bdiffusers';
+import { ITextToImageResponse } from '../types/diffusers';
 
 const { ENDPOINT, NODE_ENV } = envs;
 
@@ -127,7 +127,7 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   );
   await interaction.editReply({
     embeds: [messageEmbed],
-    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    content: `${user} Your task is completed.`,
     components: [row0, row1],
   });
   // TODO(@byeongal) migrate to NFT Server
@@ -142,7 +142,7 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   row1.addComponents(new ButtonBuilder().setLabel('View on Insight').setStyle(ButtonStyle.Link).setURL(insightURL));
   await interaction.editReply({
     embeds: [messageEmbed],
-    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    content: `${user} Your task is completed.`,
     components: [row0, row1],
   });
 };

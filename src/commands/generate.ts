@@ -4,7 +4,7 @@ import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus, Warning
 import { randomUInt32, postRequest, getRequest } from '../common/utils';
 import envs from '../common/envs';
 import { NODE_ENVS } from '../common/constants';
-import { ITextToImageResponse } from '../types/\bdiffusers';
+import { ITextToImageResponse } from '../types/diffusers';
 
 const { ENDPOINT, NODE_ENV } = envs;
 
@@ -149,7 +149,7 @@ const generate = async (interaction: CommandInteraction) => {
   );
   await interaction.editReply({
     embeds: [messageEmbed],
-    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    content: `${user} Your task is completed.`,
     components: [row0, row1],
   });
   // TODO(@byeongal) migrate to NFT Server
@@ -164,7 +164,7 @@ const generate = async (interaction: CommandInteraction) => {
   row1.addComponents(new ButtonBuilder().setLabel('View on Insight').setStyle(ButtonStyle.Link).setURL(insightURL));
   await interaction.editReply({
     embeds: [messageEmbed],
-    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    content: `${user} Your task is completed.`,
     components: [row0, row1],
   });
 };

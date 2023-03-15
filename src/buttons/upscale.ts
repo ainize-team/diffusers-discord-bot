@@ -3,7 +3,7 @@ import { getRequest, postRequest } from '../common/utils';
 import envs from '../common/envs';
 import Button from './buttons';
 import { ErrorTitle, ResponseStatus } from '../common/enums';
-import { IImageToImageResponse } from '../types/\bdiffusers';
+import { IImageToImageResponse } from '../types/diffusers';
 
 const { ENDPOINT, UPSCALE_ENDPOINT } = envs;
 
@@ -82,7 +82,7 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   messageEmbed.setImage(result.output);
   await interaction.editReply({
     embeds: [messageEmbed],
-    content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.COMPLETED}`,
+    content: `${user} Your task is completed.`,
   });
 };
 

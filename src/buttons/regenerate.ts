@@ -1,7 +1,7 @@
-import { ButtonInteraction, EmbedBuilder, Colors, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
+import { ButtonInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 import { getRequest, randomUInt32, postRequest } from '../common/utils';
 import envs from '../common/envs';
-import { ResponseStatus, WarningMessages } from '../common/enums';
+import { DiscordColors, ResponseStatus, WarningMessages } from '../common/enums';
 import Button from './buttons';
 
 import { NODE_ENVS } from '../common/constants';
@@ -81,7 +81,7 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   const user = interaction.user.toString();
   let description = `task_id: ${taskId}\n`;
   const messageEmbed = new EmbedBuilder()
-    .setColor(Colors.Green)
+    .setColor(DiscordColors.DEFAULT)
     .setTitle(`Prompt : ${params.prompt}`)
     .setDescription(description);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
@@ -97,7 +97,9 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   }
   if (result.result.grid.is_filtered) {
     description += `${WarningMessages.NSFW}\n`;
-    messageEmbed.setColor(Colors.Orange).setDescription(description);
+    messageEmbed.setColor(DiscordColors.WARNING).setDescription(description);
+  } else {
+    messageEmbed.setColor(DiscordColors.SUCCESS);
   }
   messageEmbed.setImage(result.result.grid.url);
   const buttons0: Array<ButtonBuilder> = [];

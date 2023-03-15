@@ -1,3 +1,5 @@
+import { Colors } from 'discord.js';
+
 export enum ResponseStatus {
   PENDING = 'pending',
   ASSIGNED = 'assigned',
@@ -58,4 +60,11 @@ export enum SchedulerID {
   K_DPM_2_DISCRETE = 'k_dpm_2_discrete',
   K_DPM_2_ANCESTRAL_DISCRETE = 'k_dpm_2_ancestral_discrete',
   LMS_DISCRETE = 'lms_discrete',
+}
+
+export enum DiscordColors {
+  DEFAULT = Colors.Blue,
+  SUCCESS = Colors.Green,
+  WARNING = Colors.Orange,
+  ERROR = Colors.Red,
 }

@@ -1,6 +1,14 @@
-import { Colors, CommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Command from './commands';
-import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus, WarningMessages } from '../common/enums';
+import {
+  ModelID,
+  ModelName,
+  SchedulerName,
+  SchedulerID,
+  ResponseStatus,
+  WarningMessages,
+  DiscordColors,
+} from '../common/enums';
 import { randomUInt32, postRequest, getRequest } from '../common/utils';
 import envs from '../common/envs';
 import { NODE_ENVS } from '../common/constants';
@@ -102,7 +110,7 @@ const generate = async (interaction: CommandInteraction) => {
   const user = interaction.user.toString();
   let description = `task_id: ${taskId}\n`;
   const messageEmbed = new EmbedBuilder()
-    .setColor(Colors.Green)
+    .setColor(DiscordColors.DEFAULT)
     .setTitle(`Prompt : ${prompt}`)
     .setDescription(description);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
@@ -118,7 +126,9 @@ const generate = async (interaction: CommandInteraction) => {
   }
   if (result.result.grid.is_filtered) {
     description += `${WarningMessages.NSFW}\n`;
-    messageEmbed.setColor(Colors.Orange).setDescription(description);
+    messageEmbed.setColor(DiscordColors.WARNING).setDescription(description);
+  } else {
+    messageEmbed.setColor(DiscordColors.SUCCESS);
   }
   messageEmbed.setImage(result.result.grid.url);
 

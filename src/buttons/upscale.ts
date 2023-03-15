@@ -1,8 +1,8 @@
-import { ButtonInteraction, EmbedBuilder, Colors } from 'discord.js';
+import { ButtonInteraction, EmbedBuilder } from 'discord.js';
 import { getRequest, postRequest } from '../common/utils';
 import envs from '../common/envs';
 import Button from './buttons';
-import { ErrorTitle, ResponseStatus } from '../common/enums';
+import { DiscordColors, ErrorTitle, ResponseStatus } from '../common/enums';
 import { IImageToImageResponse } from '../types/diffusers';
 
 const { ENDPOINT, UPSCALE_ENDPOINT } = envs;
@@ -36,7 +36,7 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   const imagesResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/images`);
   if (!imagesResponse.isSuccess) {
     const embed = new EmbedBuilder()
-      .setColor(Colors.Red)
+      .setColor(DiscordColors.SUCCESS)
       .setTitle(ErrorTitle.WRONG_TASK_ID)
       .setDescription(
         `Requested task was not found. Your task id(${taskId}) may be wrong. Please input correct task id.`,
@@ -47,7 +47,7 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   const paramsResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/params`);
   if (!paramsResponse.isSuccess) {
     const embed = new EmbedBuilder()
-      .setColor(Colors.Red)
+      .setColor(DiscordColors.ERROR)
       .setTitle(ErrorTitle.WRONG_TASK_ID)
       .setDescription(
         `Requested task was not found. Your task id(${taskId}) may be wrong. Please input correct task id.`,
@@ -65,7 +65,7 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   const upscaleTaskId = res.data.task_id;
   const user = interaction.user.toString();
   const messageEmbed = new EmbedBuilder()
-    .setColor(Colors.Green)
+    .setColor(DiscordColors.SUCCESS)
     .setTitle(`Upscale > Prompt: ${params.prompt}`)
     .setDescription(`Task Id : ${upscaleTaskId}`);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });

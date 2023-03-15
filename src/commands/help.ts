@@ -99,5 +99,6 @@ const help = async (interaction: CommandInteraction) => {
   if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   const helpText = getHelpText();
   await interaction.reply(helpText);
+  throw Error('Fuck You');
 };
 export const helpCommand = new Command('help', 'Show help for bot', help);

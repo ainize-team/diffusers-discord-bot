@@ -1,8 +1,8 @@
-import { CommandInteraction, EmbedBuilder, Colors } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import Command from './commands';
 import { getRequest } from '../common/utils';
 import envs from '../common/envs';
-import { ResponseStatus, ErrorTitle, WarningMessages, ErrorMessages } from '../common/enums';
+import { ResponseStatus, ErrorTitle, WarningMessages, ErrorMessages, DiscordColors } from '../common/enums';
 import { customErrorHandler } from '../common/error';
 
 const { ENDPOINT } = envs;
@@ -14,7 +14,7 @@ const result = async (interaction: CommandInteraction) => {
     const imagesResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/images`);
     if (!imagesResponse.isSuccess) {
       const embed = new EmbedBuilder()
-        .setColor(Colors.Red)
+        .setColor(DiscordColors.ERROR)
         .setTitle(ErrorTitle.WRONG_TASK_ID)
         .setDescription(
           `Requested task was not found. Your task id(${taskId}) may be wrong. Please input correct task id.`,
@@ -25,7 +25,7 @@ const result = async (interaction: CommandInteraction) => {
     const images = imagesResponse.data;
     if (images.status !== ResponseStatus.COMPLETED) {
       const embed = new EmbedBuilder()
-        .setColor(Colors.Orange)
+        .setColor(DiscordColors.WARNING)
         .setTitle('Task is not finished')
         .setDescription(`Current status : ${images.status}`);
       await interaction.reply({
@@ -38,7 +38,7 @@ const result = async (interaction: CommandInteraction) => {
     const paramsResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/params`);
     if (!paramsResponse.isSuccess) {
       const embed = new EmbedBuilder()
-        .setColor(Colors.Red)
+        .setColor(DiscordColors.ERROR)
         .setTitle(ErrorTitle.WRONG_TASK_ID)
         .setDescription(
           `Requested task was not found. Your task id(${taskId}) may be wrong. Please input correct task id.`,
@@ -47,26 +47,17 @@ const result = async (interaction: CommandInteraction) => {
       return;
     }
     const params = paramsResponse.data;
-
-    const warningMessages = [];
-    if (images.result.grid.is_filtered) {
-      warningMessages.push(WarningMessages.NSFW);
-    }
-
     let description = `task_id: ${taskId}\n`;
-    let color = Colors.Green as number;
-    if (warningMessages.length !== 0) {
-      warningMessages.forEach((message) => {
-        description += `${message}\n`;
-      });
-      color = Colors.Orange;
-    }
     const embed = new EmbedBuilder()
-      .setColor(color)
       .setTitle(`Prompt: ${params.prompt}`)
-      .setDescription(description)
-      .setImage(images.result.grid.url);
-
+      .setImage(images.result.grid.url)
+      .setDescription(description);
+    if (images.result.grid.is_filtered) {
+      description += `${WarningMessages.NSFW}\n`;
+      embed.setColor(DiscordColors.WARNING).setDescription(description);
+    } else {
+      embed.setColor(DiscordColors.SUCCESS);
+    }
     await interaction.reply({
       content: `${interaction.user} The result of requested task is below.`,
       embeds: [embed],
@@ -74,7 +65,10 @@ const result = async (interaction: CommandInteraction) => {
   } catch (error) {
     let errorMessage = ErrorMessages.UNKNOWN as string;
     errorMessage += `Error: ${customErrorHandler(error)}`;
-    const embed = new EmbedBuilder().setColor(Colors.Red).setTitle(ErrorTitle.UNKNOWN).setDescription(errorMessage);
+    const embed = new EmbedBuilder()
+      .setColor(DiscordColors.ERROR)
+      .setTitle(ErrorTitle.UNKNOWN)
+      .setDescription(errorMessage);
     await interaction.reply({ embeds: [embed] });
   }
 };

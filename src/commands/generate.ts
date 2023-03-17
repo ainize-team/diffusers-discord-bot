@@ -13,31 +13,9 @@ import { randomUInt32, postRequest, getRequest } from '../common/utils';
 import envs from '../common/envs';
 import { NODE_ENVS } from '../common/constants';
 import { ITextToImageResponse } from '../types/diffusers';
+import { waitForStatusChange } from '../common/promise';
 
 const { ENDPOINT, NODE_ENV } = envs;
-
-const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, timeout = 300000) => {
-  let intervalId: NodeJS.Timer;
-  const timeoutPromise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      clearInterval(intervalId);
-      reject(new Error('Timeout'));
-    }, timeout);
-  });
-  const statusPromise = new Promise((resolve, reject) => {
-    intervalId = setInterval(async () => {
-      const res = await getRequest(`${ENDPOINT}/tasks/${taskId}/images`);
-      if (!res.isSuccess) {
-        reject(new Error('Error'));
-      }
-      if (res.data.status !== prevStatus) {
-        clearInterval(intervalId);
-        resolve(res.data);
-      }
-    }, 1000);
-  });
-  return Promise.race([timeoutPromise, statusPromise]);
-};
 
 const waitForTxStatusChange = async (taskId: string, timeout = 300000) => {
   let intervalId: NodeJS.Timer;
@@ -115,7 +93,10 @@ const generate = async (interaction: CommandInteraction) => {
     .setDescription(description);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
-  let result = (await waitForStatusChange(ResponseStatus.PENDING, taskId)) as ITextToImageResponse;
+  let result = (await waitForStatusChange(
+    ResponseStatus.PENDING,
+    `${ENDPOINT}/tasks/${taskId}/images`,
+  )) as ITextToImageResponse;
   if (result.status === ResponseStatus.ERROR) {
     messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
     await interaction.editReply({
@@ -130,7 +111,10 @@ const generate = async (interaction: CommandInteraction) => {
   });
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
-    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, taskId)) as ITextToImageResponse;
+    result = (await waitForStatusChange(
+      ResponseStatus.ASSIGNED,
+      `${ENDPOINT}/tasks/${taskId}/images`,
+    )) as ITextToImageResponse;
     if (result.status === ResponseStatus.ERROR) {
       messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
       await interaction.editReply({

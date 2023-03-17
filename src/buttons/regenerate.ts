@@ -139,14 +139,14 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   const mainText =
     "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
   const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${imageURL}`;
-  const row0 = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
-  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  const imageRow = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
+  const urlRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL),
   );
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task is completed.`,
-    components: [row0, row1],
+    components: [imageRow, urlRow],
   });
   // TODO(@byeongal) migrate to NFT Server
   const txResult = (await waitForTxStatusChange(taskId)) as {
@@ -157,11 +157,11 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   const prefix = NODE_ENV === NODE_ENVS.DEV ? 'testnet-' : '';
   const txHash = txResult.tx_hash[ResponseStatus.COMPLETED];
   const insightURL = `https://${prefix}insight.ainetwork.ai/transactions/${txHash}`;
-  row1.addComponents(new ButtonBuilder().setLabel('View on Insight').setStyle(ButtonStyle.Link).setURL(insightURL));
+  urlRow.addComponents(new ButtonBuilder().setLabel('View on Insight').setStyle(ButtonStyle.Link).setURL(insightURL));
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task is completed.`,
-    components: [row0, row1],
+    components: [imageRow, urlRow],
   });
 };
 

@@ -87,6 +87,14 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
   let result = (await waitForStatusChange(ResponseStatus.PENDING, taskId)) as ITextToImageResponse;
+  if (result.status === ResponseStatus.ERROR) {
+    messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
+    await interaction.editReply({
+      embeds: [messageEmbed],
+      content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ERROR}`,
+    });
+    return;
+  }
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ASSIGNED}`,
@@ -94,6 +102,14 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
     result = (await waitForStatusChange(ResponseStatus.ASSIGNED, taskId)) as ITextToImageResponse;
+    if (result.status === ResponseStatus.ERROR) {
+      messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
+      await interaction.editReply({
+        embeds: [messageEmbed],
+        content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.ERROR}`,
+      });
+      return;
+    }
   }
   if (result.result.grid.is_filtered) {
     description += `${WarningMessages.NSFW}\n`;

@@ -71,6 +71,14 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
   let result = (await waitForStatusChange(ResponseStatus.PENDING, upscaleTaskId)) as IImageToImageResponse;
+  if (result.status === ResponseStatus.ERROR) {
+    messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
+    await interaction.editReply({
+      embeds: [messageEmbed],
+      content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ERROR}`,
+    });
+    return;
+  }
   await interaction.editReply({
     embeds: [messageEmbed],
     content: `${user} Your task's status is updated from ${ResponseStatus.PENDING} to ${ResponseStatus.ASSIGNED}`,
@@ -78,6 +86,14 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
     result = (await waitForStatusChange(ResponseStatus.ASSIGNED, upscaleTaskId)) as IImageToImageResponse;
+    if (result.status === ResponseStatus.ERROR) {
+      messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
+      await interaction.editReply({
+        embeds: [messageEmbed],
+        content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.ERROR}`,
+      });
+      return;
+    }
   }
   messageEmbed.setImage(result.output);
   await interaction.editReply({

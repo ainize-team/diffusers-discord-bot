@@ -1,5 +1,5 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
-import { IDiscordCommand, IExecuteFunc, IIntegerCommandOption, IStringCommandOption } from '../types';
+import { SlashCommandBuilder } from 'discord.js';
+import { IDiscordCommand, ICommandExecuteFunc, INumberCommandOption, IStringCommandOption } from '../types';
 
 export default class Command {
   public name: string;
@@ -8,9 +8,9 @@ export default class Command {
 
   private commandBuilder: SlashCommandBuilder;
 
-  private execute: IExecuteFunc;
+  private execute: ICommandExecuteFunc;
 
-  constructor(name: string, description: string, execute: IExecuteFunc) {
+  constructor(name: string, description: string, execute: ICommandExecuteFunc) {
     this.name = name;
     this.description = description;
 
@@ -25,32 +25,51 @@ export default class Command {
         .setName(commandOption.name)
         .setDescription(commandOption.description)
         .setRequired(commandOption.isRequired);
-      if (commandOption.choices) {
+      if (commandOption.choices !== undefined) {
         option.setChoices(...commandOption.choices);
       }
-      if (commandOption.maxLength) {
+      if (commandOption.maxLength !== undefined) {
         option.setMaxLength(commandOption.maxLength);
       }
-      if (commandOption.minLength) {
+      if (commandOption.minLength !== undefined) {
         option.setMinLength(commandOption.minLength);
       }
       return option;
     });
   }
 
-  addIntegerCommandOption(commandOption: IIntegerCommandOption) {
+  addIntegerCommandOption(commandOption: INumberCommandOption) {
     this.commandBuilder.addIntegerOption((option) => {
       option
         .setName(commandOption.name)
         .setDescription(commandOption.description)
         .setRequired(commandOption.isRequired);
-      if (commandOption.choices) {
+      if (commandOption.choices !== undefined) {
         option.setChoices(...commandOption.choices);
       }
-      if (commandOption.maxValue) {
+      if (commandOption.maxValue !== undefined) {
         option.setMaxValue(commandOption.maxValue);
       }
-      if (commandOption.minValue) {
+      if (commandOption.minValue !== undefined) {
+        option.setMinValue(commandOption.minValue);
+      }
+      return option;
+    });
+  }
+
+  addNumberCommandOption(commandOption: INumberCommandOption) {
+    this.commandBuilder.addNumberOption((option) => {
+      option
+        .setName(commandOption.name)
+        .setDescription(commandOption.description)
+        .setRequired(commandOption.isRequired);
+      if (commandOption.choices !== undefined) {
+        option.setChoices(...commandOption.choices);
+      }
+      if (commandOption.maxValue !== undefined) {
+        option.setMaxValue(commandOption.maxValue);
+      }
+      if (commandOption.minValue !== undefined) {
         option.setMinValue(commandOption.minValue);
       }
       return option;

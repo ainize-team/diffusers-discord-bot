@@ -11,7 +11,7 @@ const getHelpText = (): string => {
     {
       name: 'steps',
       value: 'How many steps to spend generating (diffusing) your image.',
-      condition: 'integer | min: 1 | max: 100 | default: 50',
+      condition: 'integer | min: 10 | max: 150 | default: 50',
     },
     {
       name: 'seed',
@@ -29,7 +29,7 @@ const getHelpText = (): string => {
       condition: 'integer | min: 512 | max: 1024 | default: 768',
     },
     {
-      name: 'images',
+      name: 'num_images_per_prompt',
       value: 'How many images you wish to generate.',
       condition: 'integer | min: 1 | max: 4 | default: 2',
     },
@@ -39,9 +39,9 @@ const getHelpText = (): string => {
       condition: 'number | min: 0 | max: 20 | default: 7',
     },
     {
-      name: 'model_id',
+      name: 'model',
       value: 'name of diffusion model.',
-      condition: 'string | default: `stable-diffusion-v2-1-768`',
+      condition: 'string | default: `Stable Diffusion v2.1-768`',
     },
     {
       name: 'negative_prompt',
@@ -49,9 +49,9 @@ const getHelpText = (): string => {
       condition: 'string | default: ` `',
     },
     {
-      name: 'scheduler_type',
+      name: 'scheduler',
       value: 'diffusers scheduler type',
-      condition: 'string | default: `ddim`',
+      condition: 'string | default: `DDIM`',
     },
   ];
   const generateTitle = '/generate';
@@ -99,5 +99,6 @@ const help = async (interaction: CommandInteraction) => {
   if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   const helpText = getHelpText();
   await interaction.reply(helpText);
+  throw Error('Fuck You');
 };
 export const helpCommand = new Command('help', 'Show help for bot', help);

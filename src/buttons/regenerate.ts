@@ -1,16 +1,9 @@
-import { CommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import Command from './commands';
-import {
-  ModelID,
-  ModelName,
-  SchedulerName,
-  SchedulerID,
-  ResponseStatus,
-  WarningMessages,
-  DiscordColors,
-} from '../common/enums';
-import { randomUInt32, postRequest, getRequest } from '../common/utils';
+import { ButtonInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
+import { getRequest, randomUInt32, postRequest } from '../common/utils';
 import envs from '../common/envs';
+import { DiscordColors, ResponseStatus, WarningMessages } from '../common/enums';
+import Button from './buttons';
+
 import { NODE_ENVS } from '../common/constants';
 import { ITextToImageResponse } from '../types/diffusers';
 
@@ -62,25 +55,14 @@ const waitForTxStatusChange = async (taskId: string, timeout = 300000) => {
   return Promise.race([timeoutPromise, statusPromise]);
 };
 
-const generate = async (interaction: CommandInteraction) => {
-  if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
-  const requestParams: { [key: string]: string | number | boolean | undefined } = {};
-  interaction.options.data.forEach((data) => {
-    requestParams[data.name] = data.value;
-  });
-  const {
-    prompt,
-    steps = 30,
-    seed = randomUInt32(),
-    width = 768,
-    height = 768,
-    guidance_scale = 7,
-    num_images_per_prompt = 2,
-    model = ModelID.STABLE_DIFFUSION_V2_1_768,
-    scheduler = SchedulerID.DDIM,
-    negative_prompt = '',
-  } = requestParams;
+const regenerate = async (interaction: ButtonInteraction, options: Array<string>) => {
   await interaction.deferReply();
+  const [prevTaskId] = options;
+  const { isSuccess, data: params } = await getRequest(`${ENDPOINT}/tasks/${prevTaskId}/params`);
+  if (!isSuccess) {
+    interaction.editReply('Error');
+    return;
+  }
   const discord = {
     // TODO(@byeongal) update api server [ remove ]
     user_id: 'string',
@@ -88,18 +70,7 @@ const generate = async (interaction: CommandInteraction) => {
     channel_id: 'string',
     message_id: 'string',
   };
-  const params = {
-    prompt,
-    negative_prompt,
-    steps,
-    seed,
-    width,
-    height,
-    images: num_images_per_prompt, // TODO(@byeongal) update api server [ change variable name ]
-    guidance_scale,
-    model_id: model, // TODO(@byeongal) update api server [ change variable name ]
-    scheduler_type: scheduler, // TODO(@byeongal) update api server [ change variable name ]
-  };
+  params.seed = randomUInt32();
   const data = { discord, params };
   const res = await postRequest(`${ENDPOINT}/generate`, data);
   if (!res.isSuccess) {
@@ -111,7 +82,7 @@ const generate = async (interaction: CommandInteraction) => {
   let description = `task_id: ${taskId}\n`;
   const messageEmbed = new EmbedBuilder()
     .setColor(DiscordColors.DEFAULT)
-    .setTitle(`Prompt : ${prompt}`)
+    .setTitle(`Prompt : ${params.prompt}`)
     .setDescription(description);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
@@ -147,7 +118,6 @@ const generate = async (interaction: CommandInteraction) => {
     messageEmbed.setColor(DiscordColors.SUCCESS);
   }
   messageEmbed.setImage(result.result.grid.url);
-
   const buttons0: Array<ButtonBuilder> = [];
   Object.keys(result.result).forEach((key: string) => {
     if (key !== 'grid') {
@@ -168,7 +138,7 @@ const generate = async (interaction: CommandInteraction) => {
   // TODO(@byeongal) get message from data base
   const mainText =
     "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
-  const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${encodeURIComponent(imageURL)}`;
+  const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${imageURL}`;
   const imageRow = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
   const urlRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL),
@@ -194,153 +164,5 @@ const generate = async (interaction: CommandInteraction) => {
     components: [imageRow, urlRow],
   });
 };
-export const generateCommand = new Command('generate', 'Generate Image', generate);
-generateCommand.addStringCommandOption({
-  name: 'prompt',
-  description: 'Type in a full descriptive sentence, as if you were writing a caption for a photo.',
-  isRequired: true,
-  maxLength: 250,
-});
 
-generateCommand.addIntegerCommandOption({
-  name: 'steps',
-  description: 'How many steps to spend generating (diffusing) your image.',
-  isRequired: false,
-  minValue: 10,
-  maxValue: 150,
-});
-
-generateCommand.addIntegerCommandOption({
-  name: 'seed',
-  description: 'The seed used to generate your image.',
-  isRequired: false,
-  minValue: 0,
-  maxValue: 4294967295,
-});
-
-generateCommand.addIntegerCommandOption({
-  name: 'width',
-  description: 'The width of the generated image.',
-  isRequired: false,
-  choices: Array.from({ length: 9 }, (_, index) => ({
-    name: `${index * 64 + 512}`,
-    value: index * 64 + 512,
-  })),
-  minValue: 512,
-  maxValue: 1024,
-});
-
-generateCommand.addIntegerCommandOption({
-  name: 'height',
-  description: 'The height of the generated image.',
-  isRequired: false,
-  choices: Array.from({ length: 9 }, (_, index) => ({
-    name: `${index * 64 + 512}`,
-    value: index * 64 + 512,
-  })),
-  minValue: 512,
-  maxValue: 1024,
-});
-
-generateCommand.addIntegerCommandOption({
-  name: 'num_images_per_prompt',
-  description: 'The number of images to generate per prompt.',
-  isRequired: false,
-  choices: Array.from({ length: 4 }, (_, index) => ({
-    name: `${index + 1}`,
-    value: index + 1,
-  })),
-  minValue: 1,
-  maxValue: 4,
-});
-
-generateCommand.addNumberCommandOption({
-  name: 'guidance_scale',
-  description: 'How much the image will be like your prompt. Higher values keep your image closer to your prompt.',
-  isRequired: false,
-  minValue: 0,
-  maxValue: 20,
-});
-
-generateCommand.addStringCommandOption({
-  name: 'model',
-  description: 'name of diffusion model.',
-  isRequired: false,
-  choices: [
-    {
-      name: ModelName.STABLE_DIFFUSION_V1_4,
-      value: ModelID.STABLE_DIFFUSION_V1_4,
-    },
-    {
-      name: ModelName.STABLE_DIFFUSION_V1_5,
-      value: ModelID.STABLE_DIFFUSION_V1_5,
-    },
-    {
-      name: ModelName.STABLE_DIFFUSION_V2,
-      value: ModelID.STABLE_DIFFUSION_V2,
-    },
-    {
-      name: ModelName.STABLE_DIFFUSION_V2_768,
-      value: ModelID.STABLE_DIFFUSION_V2_768,
-    },
-    {
-      name: ModelName.STABLE_DIFFUSION_V2_1,
-      value: ModelID.STABLE_DIFFUSION_V2_1,
-    },
-    {
-      name: ModelName.STABLE_DIFFUSION_V2_1_768,
-      value: ModelID.STABLE_DIFFUSION_V2_1_768,
-    },
-    {
-      name: ModelName.OPENJOURNEY_V2,
-      value: ModelID.OPENJOURNEY_V2,
-    },
-  ],
-});
-
-generateCommand.addStringCommandOption({
-  name: 'negative_prompt',
-  description: 'prompt value that you do not want to see in the resulting image',
-  isRequired: false,
-  maxLength: 250,
-});
-
-generateCommand.addStringCommandOption({
-  name: 'scheduler',
-  description: 'name of scheduler',
-  isRequired: false,
-  choices: [
-    {
-      name: SchedulerName.DDIM,
-      value: SchedulerID.DDIM,
-    },
-    {
-      name: SchedulerName.PNDM,
-      value: SchedulerID.PNDM,
-    },
-    {
-      name: SchedulerName.EULER_DISCRETE,
-      value: SchedulerID.EULER_DISCRETE,
-    },
-    {
-      name: SchedulerName.EULER_ANCESTRAL_DISCRETE,
-      value: SchedulerID.EULER_ANCESTRAL_DISCRETE,
-    },
-    {
-      name: SchedulerName.HEUN_DISCRETE,
-      value: SchedulerID.HEUN_DISCRETE,
-    },
-    {
-      name: SchedulerName.K_DPM_2_DISCRETE,
-      value: SchedulerID.K_DPM_2_DISCRETE,
-    },
-    {
-      name: SchedulerName.K_DPM_2_ANCESTRAL_DISCRETE,
-      value: SchedulerID.K_DPM_2_ANCESTRAL_DISCRETE,
-    },
-    {
-      name: SchedulerName.LMS_DISCRETE,
-      value: SchedulerID.LMS_DISCRETE,
-    },
-  ],
-});
+export const regenerateButton = new Button('regenerate', regenerate);

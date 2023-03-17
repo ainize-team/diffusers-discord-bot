@@ -148,10 +148,10 @@ const generate = async (interaction: CommandInteraction) => {
   }
   messageEmbed.setImage(result.result.grid.url);
 
-  const buttons0: Array<ButtonBuilder> = [];
+  const imageButtons: Array<ButtonBuilder> = [];
   Object.keys(result.result).forEach((key: string) => {
     if (key !== 'grid') {
-      buttons0.push(
+      imageButtons.push(
         new ButtonBuilder()
           .setCustomId(`singleImage@${taskId}@${key}`)
           .setLabel(`#${key}`)
@@ -159,7 +159,9 @@ const generate = async (interaction: CommandInteraction) => {
       );
     }
   });
-  buttons0.push(new ButtonBuilder().setCustomId(`regenerate@${taskId}`).setEmoji('🔁').setStyle(ButtonStyle.Secondary));
+  imageButtons.push(
+    new ButtonBuilder().setCustomId(`regenerate@${taskId}`).setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+  );
   const twitterBaseURL = 'https://twitter.com/intent/tweet';
   const imageURL =
     NODE_ENV === NODE_ENVS.DEV
@@ -169,7 +171,7 @@ const generate = async (interaction: CommandInteraction) => {
   const mainText =
     "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
   const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${encodeURIComponent(imageURL)}`;
-  const imageRow = new ActionRowBuilder<ButtonBuilder>().addComponents(buttons0);
+  const imageRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButtons);
   const urlRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL),
   );

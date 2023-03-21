@@ -1,10 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import Command from './commands';
 import { getRequest } from '../common/utils';
 import envs from '../common/envs';
-import { ResponseStatus, ErrorTitle, WarningMessages, ErrorMessages, DiscordColors } from '../common/enums';
+import { ResponseStatus, ErrorTitle, ErrorMessages, DiscordColors } from '../common/enums';
 import { customErrorHandler } from '../common/error';
 import { ITextToImageResponse } from '../types';
+import { buildTextToImageEmbed } from '../common/discord';
 
 const { ENDPOINT } = envs;
 
@@ -12,6 +13,9 @@ const result = async (interaction: CommandInteraction) => {
   if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   try {
     const taskId = interaction.options.getString('task_id');
+    if (!taskId) {
+      throw Error('Error');
+    }
     const imagesResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/images`);
     if (!imagesResponse.isSuccess) {
       const embed = new EmbedBuilder()
@@ -35,7 +39,6 @@ const result = async (interaction: CommandInteraction) => {
       });
       return;
     }
-
     const paramsResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/params`);
     if (!paramsResponse.isSuccess) {
       const embed = new EmbedBuilder()
@@ -48,35 +51,14 @@ const result = async (interaction: CommandInteraction) => {
       return;
     }
     const params = paramsResponse.data;
-    let description = `task_id: ${taskId}\n`;
-    const embed = new EmbedBuilder()
-      .setTitle(`Prompt: ${params.prompt}`)
-      .setImage(images.result.grid.url)
-      .setDescription(description);
+    const description = `task_id: ${taskId}\n`;
+    const title = `Prompt : ${params.prompt}`;
 
-    if (images.result.grid.is_filtered) {
-      description += `${WarningMessages.NSFW}\n`;
-      embed.setColor(DiscordColors.WARNING).setDescription(description);
-    } else {
-      embed.setColor(DiscordColors.SUCCESS);
-    }
-
-    const imageButtons: Array<ButtonBuilder> = [];
-    Object.keys(images.result).forEach((key: string) => {
-      if (key !== 'grid') {
-        imageButtons.push(
-          new ButtonBuilder()
-            .setCustomId(`singleImage@${taskId}@${key}`)
-            .setLabel(`#${key}`)
-            .setStyle(ButtonStyle.Secondary),
-        );
-      }
-    });
-    const imageRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButtons);
-    await interaction.reply({
+    const { embeds, components } = buildTextToImageEmbed(description, title, taskId, images);
+    await interaction.editReply({
+      embeds,
       content: `${interaction.user} The result of requested task is below.`,
-      embeds: [embed],
-      components: [imageRow],
+      components,
     });
   } catch (error) {
     let errorMessage = ErrorMessages.UNKNOWN as string;

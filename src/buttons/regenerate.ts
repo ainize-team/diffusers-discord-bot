@@ -5,7 +5,7 @@ import { DiscordColors, ResponseStatus } from '../common/enums';
 import Button from './buttons';
 
 import { ITextToImageResponse } from '../types/diffusers';
-import { waitForStatusChange } from '../common/promise';
+import { waitForStatusChange, waitForTxStatusChange } from '../common/promise';
 import { buildEmbed, buildTextToImageEmbed, buildTextToImageEmbedWithURLButton } from '../common/discord';
 import { ITxResult } from '../types';
 
@@ -78,7 +78,7 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
     content: `${user} Your task is completed.`,
     components,
   });
-  const txResult = (await waitForStatusChange(taskId, `${ENDPOINT}/tasks/${taskId}/tx-hash`)) as ITxResult;
+  const txResult = (await waitForTxStatusChange(`${ENDPOINT}/tasks/${taskId}/tx-hash`)) as ITxResult;
   ({ embeds, components } = buildTextToImageEmbedWithURLButton(description, title, taskId, result, txResult));
   await interaction.editReply({
     embeds,

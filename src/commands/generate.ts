@@ -4,7 +4,7 @@ import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus, Discord
 import { randomUInt32, postRequest } from '../common/utils';
 import envs from '../common/envs';
 import { ITextToImageResponse } from '../types/diffusers';
-import { waitForStatusChange } from '../common/promise';
+import { waitForStatusChange, waitForTxStatusChange } from '../common/promise';
 import { buildEmbed, buildTextToImageEmbed, buildTextToImageEmbedWithURLButton } from '../common/discord';
 import { ITxResult } from '../types';
 
@@ -99,7 +99,7 @@ const generate = async (interaction: CommandInteraction) => {
     content: `${user} Your task is completed.`,
     components,
   });
-  const txResult = (await waitForStatusChange(taskId, `${ENDPOINT}/tasks/${taskId}/tx-hash`)) as ITxResult;
+  const txResult = (await waitForTxStatusChange(`${ENDPOINT}/tasks/${taskId}/tx-hash`)) as ITxResult;
   ({ embeds, components } = buildTextToImageEmbedWithURLButton(description, title, taskId, result, txResult));
   await interaction.editReply({
     embeds,

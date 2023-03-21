@@ -2,7 +2,7 @@ import { SECOND } from './constants';
 import { ResponseStatus } from './enums';
 import { getRequest } from './utils';
 
-const promiseWithTimeout = <T>(promise: Promise<T>, timeout: number = 300 * SECOND) => {
+const promiseWithTimeout = <T>(promise: Promise<T>, timeout: number = 5 * SECOND) => {
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => {
       reject(new Error('Timeout Error'));
@@ -31,7 +31,7 @@ export const waitForStatusChange = async (prevStatus: ResponseStatus, endpoint: 
   return result;
 };
 
-export const waitForTxStatusChange = async (taskId: string, endpoint: string) => {
+export const waitForTxStatusChange = async (endpoint: string) => {
   let intervalId: NodeJS.Timer;
   const promise = new Promise((resolve, reject) => {
     intervalId = setInterval(async () => {

@@ -1,8 +1,8 @@
-import { SECOND } from './constants';
+import { SECOND_IN_MS } from './constants';
 import { ResponseStatus } from './enums';
 import { getRequest } from './utils';
 
-const promiseWithTimeout = <T>(promise: Promise<T>, timeout: number = 300 * SECOND) => {
+const promiseWithTimeout = <T>(promise: Promise<T>, timeout: number = 300 * SECOND_IN_MS) => {
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => {
       reject(new Error('Timeout Error'));
@@ -23,7 +23,7 @@ export const waitForStatusChange = async (prevStatus: ResponseStatus, endpoint: 
         clearInterval(intervalId);
         resolve(res.data);
       }
-    }, SECOND);
+    }, SECOND_IN_MS);
   });
   const cancel = () => clearInterval(intervalId);
   const result = await promiseWithTimeout(promise);
@@ -43,7 +43,7 @@ export const waitForTxStatusChange = async (endpoint: string) => {
         clearInterval(intervalId);
         resolve(res.data);
       }
-    }, SECOND);
+    }, SECOND_IN_MS);
   });
   const cancel = () => clearInterval(intervalId);
   const result = await promiseWithTimeout(promise);

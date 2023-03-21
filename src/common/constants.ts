@@ -4,4 +4,4 @@ export const NODE_ENVS: { [key: string]: string } = {
 };
 export const MAX_ITERATIONS = 300;
 
-export const SECOND = 1000;
+export const SECOND_IN_MS = 1000;

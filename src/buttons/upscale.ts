@@ -8,29 +8,6 @@ import { waitForStatusChange } from '../common/promise';
 
 const { ENDPOINT, UPSCALE_ENDPOINT } = envs;
 
-// const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, timeout = 300000) => {
-//   let intervalId: NodeJS.Timer;
-//   const timeoutPromise = new Promise((resolve, reject) => {
-//     setTimeout(() => {
-//       clearInterval(intervalId);
-//       reject(new Error('Timeout'));
-//     }, timeout);
-//   });
-//   const statusPromise = new Promise((resolve, reject) => {
-//     intervalId = setInterval(async () => {
-//       const res = await getRequest(`${UPSCALE_ENDPOINT}/result/${taskId}`);
-//       if (!res.isSuccess) {
-//         reject(new Error('Error'));
-//       }
-//       if (res.data.status !== prevStatus) {
-//         clearInterval(intervalId);
-//         resolve(res.data);
-//       }
-//     }, 1000);
-//   });
-//   return Promise.race([timeoutPromise, statusPromise]);
-// };
-
 const upscale = async (interaction: ButtonInteraction, options: Array<string>) => {
   interaction.deferReply({ ephemeral: true });
   const [taskId, imageNo] = options;

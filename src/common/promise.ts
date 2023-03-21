@@ -2,7 +2,7 @@ import { SECOND } from './constants';
 import { ResponseStatus } from './enums';
 import { getRequest } from './utils';
 
-const promiseWithTimeout = <T>(promise: Promise<T>, timeout: number = 5 * SECOND) => {
+const promiseWithTimeout = <T>(promise: Promise<T>, timeout: number = 300 * SECOND) => {
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => {
       reject(new Error('Timeout Error'));

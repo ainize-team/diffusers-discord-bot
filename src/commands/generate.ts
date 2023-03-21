@@ -1,44 +1,14 @@
-import { CommandInteraction, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import Command from './commands';
-import {
-  ModelID,
-  ModelName,
-  SchedulerName,
-  SchedulerID,
-  ResponseStatus,
-  WarningMessages,
-  DiscordColors,
-} from '../common/enums';
-import { randomUInt32, postRequest, getRequest } from '../common/utils';
+import { ModelID, ModelName, SchedulerName, SchedulerID, ResponseStatus, DiscordColors } from '../common/enums';
+import { randomUInt32, postRequest } from '../common/utils';
 import envs from '../common/envs';
-import { NODE_ENVS } from '../common/constants';
 import { ITextToImageResponse } from '../types/diffusers';
 import { waitForStatusChange } from '../common/promise';
+import { buildEmbed, buildTextToImageEmbed, buildTextToImageEmbedWithURLButton } from '../common/discord';
+import { ITxResult } from '../types';
 
-const { ENDPOINT, NODE_ENV } = envs;
-
-const waitForTxStatusChange = async (taskId: string, timeout = 300000) => {
-  let intervalId: NodeJS.Timer;
-  const timeoutPromise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      clearInterval(intervalId);
-      reject(new Error('Timeout'));
-    }, timeout);
-  });
-  const statusPromise = new Promise((resolve, reject) => {
-    intervalId = setInterval(async () => {
-      const res = await getRequest(`${ENDPOINT}/tasks/${taskId}/tx-hash`);
-      if (!res.isSuccess) {
-        reject(new Error('Error'));
-      }
-      if (res.data.status === ResponseStatus.COMPLETED && ResponseStatus.COMPLETED in res.data.tx_hash) {
-        clearInterval(intervalId);
-        resolve(res.data);
-      }
-    }, 1000);
-  });
-  return Promise.race([timeoutPromise, statusPromise]);
-};
+const { ENDPOINT } = envs;
 
 const generate = async (interaction: CommandInteraction) => {
   if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
@@ -86,11 +56,9 @@ const generate = async (interaction: CommandInteraction) => {
   }
   const taskId = res.data.task_id;
   const user = interaction.user.toString();
-  let description = `task_id: ${taskId}\n`;
-  const messageEmbed = new EmbedBuilder()
-    .setColor(DiscordColors.DEFAULT)
-    .setTitle(`Prompt : ${prompt}`)
-    .setDescription(description);
+  const description = `task_id: ${taskId}\n`;
+  const title = `Prompt : ${prompt}`;
+  const messageEmbed = buildEmbed(description, title);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
   let result = (await waitForStatusChange(
@@ -121,63 +89,22 @@ const generate = async (interaction: CommandInteraction) => {
         embeds: [messageEmbed],
         content: `${user} Your task's status is updated from ${ResponseStatus.ASSIGNED} to ${ResponseStatus.ERROR}`,
       });
-      return;
     }
   }
-  if (result.result.grid.is_filtered) {
-    description += `${WarningMessages.NSFW}\n`;
-    messageEmbed.setColor(DiscordColors.WARNING).setDescription(description);
-  } else {
-    messageEmbed.setColor(DiscordColors.SUCCESS);
-  }
-  messageEmbed.setImage(result.result.grid.url);
-
-  const imageButtons: Array<ButtonBuilder> = [];
-  Object.keys(result.result).forEach((key: string) => {
-    if (key !== 'grid') {
-      imageButtons.push(
-        new ButtonBuilder()
-          .setCustomId(`singleImage@${taskId}@${key}`)
-          .setLabel(`#${key}`)
-          .setStyle(ButtonStyle.Secondary),
-      );
-    }
-  });
-  imageButtons.push(
-    new ButtonBuilder().setCustomId(`regenerate@${taskId}`).setEmoji('🔁').setStyle(ButtonStyle.Secondary),
-  );
-  const twitterBaseURL = 'https://twitter.com/intent/tweet';
-  const imageURL =
-    NODE_ENV === NODE_ENVS.DEV
-      ? `https://aindao-text-to-art-dev.ainetwork.xyz/${taskId}`
-      : `https://aindao-text-to-art.ainetwork.xyz/${taskId}`;
-  // TODO(@byeongal) get message from data base
-  const mainText =
-    "It AIN't difficult to draw a picture if you use Text-to-art through #AIN_DAO discord - click the image below to create your own image \n@ainetwork_ai #AINetwork #stablediffusion #text2art #AIN";
-  const twitterURL = `${twitterBaseURL}?text=${encodeURIComponent(mainText)}&url=${encodeURIComponent(imageURL)}`;
-  const imageRow = new ActionRowBuilder<ButtonBuilder>().addComponents(imageButtons);
-  const urlRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder().setLabel('Share on Twitter').setStyle(ButtonStyle.Link).setURL(twitterURL),
-  );
+  let embeds;
+  let components;
+  ({ embeds, components } = buildTextToImageEmbed(description, title, taskId, result));
   await interaction.editReply({
-    embeds: [messageEmbed],
+    embeds,
     content: `${user} Your task is completed.`,
-    components: [imageRow, urlRow],
+    components,
   });
-  // TODO(@byeongal) migrate to NFT Server
-  const txResult = (await waitForTxStatusChange(taskId)) as {
-    status: string;
-    tx_hash: { [status: string]: string };
-    updated_at: number;
-  };
-  const prefix = NODE_ENV === NODE_ENVS.DEV ? 'testnet-' : '';
-  const txHash = txResult.tx_hash[ResponseStatus.COMPLETED];
-  const insightURL = `https://${prefix}insight.ainetwork.ai/transactions/${txHash}`;
-  urlRow.addComponents(new ButtonBuilder().setLabel('View on Insight').setStyle(ButtonStyle.Link).setURL(insightURL));
+  const txResult = (await waitForStatusChange(taskId, `${ENDPOINT}/tasks/${taskId}/tx-hash`)) as ITxResult;
+  ({ embeds, components } = buildTextToImageEmbedWithURLButton(description, title, taskId, result, txResult));
   await interaction.editReply({
-    embeds: [messageEmbed],
+    embeds,
     content: `${user} Your task is completed.`,
-    components: [imageRow, urlRow],
+    components,
   });
 };
 export const generateCommand = new Command('generate', 'Generate Image', generate);

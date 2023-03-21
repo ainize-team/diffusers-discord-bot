@@ -30,3 +30,23 @@ export const waitForStatusChange = async (prevStatus: ResponseStatus, endpoint: 
   cancel();
   return result;
 };
+
+export const waitForTxStatusChange = async (taskId: string, endpoint: string) => {
+  let intervalId: NodeJS.Timer;
+  const promise = new Promise((resolve, reject) => {
+    intervalId = setInterval(async () => {
+      const res = await getRequest(endpoint);
+      if (!res.isSuccess) {
+        reject(new Error('Error'));
+      }
+      if (res.data.status === ResponseStatus.COMPLETED && ResponseStatus.COMPLETED in res.data.tx_hash) {
+        clearInterval(intervalId);
+        resolve(res.data);
+      }
+    }, SECOND);
+  });
+  const cancel = () => clearInterval(intervalId);
+  const result = await promiseWithTimeout(promise);
+  cancel();
+  return result;
+};

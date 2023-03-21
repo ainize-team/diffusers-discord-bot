@@ -15,7 +15,7 @@ export const interactionCreate = () => ({
         await command.execute(interaction);
       } catch (error) {
         console.error(JSON.stringify(error));
-        if (!interaction.replied) {
+        if (!interaction.replied && !interaction.deferred) {
           await interaction.reply({
             content: 'There was an error while executing this command!',
             ephemeral: true,
@@ -39,7 +39,7 @@ export const interactionCreate = () => ({
         await button.execute(interaction, options);
       } catch (error) {
         console.error(JSON.stringify(error));
-        if (!interaction.replied) {
+        if (!interaction.replied && !interaction.deferred) {
           await interaction.reply({
             content: 'There was an error while executing this button!',
             ephemeral: true,

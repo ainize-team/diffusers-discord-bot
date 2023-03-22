@@ -4,31 +4,9 @@ import envs from '../common/envs';
 import Button from './buttons';
 import { DiscordColors, ErrorTitle, ResponseStatus } from '../common/enums';
 import { IImageToImageResponse } from '../types/diffusers';
+import { waitForStatusChange } from '../common/promise';
 
 const { ENDPOINT, UPSCALE_ENDPOINT } = envs;
-
-const waitForStatusChange = async (prevStatus: ResponseStatus, taskId: string, timeout = 300000) => {
-  let intervalId: NodeJS.Timer;
-  const timeoutPromise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      clearInterval(intervalId);
-      reject(new Error('Timeout'));
-    }, timeout);
-  });
-  const statusPromise = new Promise((resolve, reject) => {
-    intervalId = setInterval(async () => {
-      const res = await getRequest(`${UPSCALE_ENDPOINT}/result/${taskId}`);
-      if (!res.isSuccess) {
-        reject(new Error('Error'));
-      }
-      if (res.data.status !== prevStatus) {
-        clearInterval(intervalId);
-        resolve(res.data);
-      }
-    }, 1000);
-  });
-  return Promise.race([timeoutPromise, statusPromise]);
-};
 
 const upscale = async (interaction: ButtonInteraction, options: Array<string>) => {
   interaction.deferReply({ ephemeral: true });
@@ -70,7 +48,10 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
     .setDescription(`Task Id : ${upscaleTaskId}`);
   await interaction.editReply({ embeds: [messageEmbed], content: `${user} Your task is successfully requested.` });
   // PENDING -> ASSIGNED
-  let result = (await waitForStatusChange(ResponseStatus.PENDING, upscaleTaskId)) as IImageToImageResponse;
+  let result = (await waitForStatusChange(
+    ResponseStatus.PENDING,
+    `${UPSCALE_ENDPOINT}/result/${upscaleTaskId}`,
+  )) as IImageToImageResponse;
   if (result.status === ResponseStatus.ERROR) {
     messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
     await interaction.editReply({
@@ -85,7 +66,10 @@ const upscale = async (interaction: ButtonInteraction, options: Array<string>) =
   });
   // ASSIGNED -> COMPLETED
   if (result.status === ResponseStatus.ASSIGNED) {
-    result = (await waitForStatusChange(ResponseStatus.ASSIGNED, upscaleTaskId)) as IImageToImageResponse;
+    result = (await waitForStatusChange(
+      ResponseStatus.ASSIGNED,
+      `${UPSCALE_ENDPOINT}/result/${upscaleTaskId}`,
+    )) as IImageToImageResponse;
     if (result.status === ResponseStatus.ERROR) {
       messageEmbed.setColor(DiscordColors.ERROR).setDescription('An error has occurred. Please try again.');
       await interaction.editReply({

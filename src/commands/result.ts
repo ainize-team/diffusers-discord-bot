@@ -13,10 +13,7 @@ const result = async (interaction: CommandInteraction) => {
   if (!interaction || interaction.user.bot || !interaction.isChatInputCommand() || !interaction.guildId) return;
   try {
     await interaction.deferReply();
-    const taskId = interaction.options.getString('task_id');
-    if (!taskId) {
-      throw Error('Error');
-    }
+    const taskId = interaction.options.getString('task_id')!;
     const imagesResponse = await getRequest(`${ENDPOINT}/tasks/${taskId}/images`);
     if (!imagesResponse.isSuccess) {
       const embed = new EmbedBuilder()

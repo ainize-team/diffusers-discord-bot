@@ -37,7 +37,6 @@ const generate = async (interaction: CommandInteraction) => {
     channel_id: interaction.channelId,
     message_id: message.id,
   };
-  console.log(message);
   const params = {
     prompt,
     negative_prompt,

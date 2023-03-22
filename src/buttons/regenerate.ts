@@ -19,12 +19,13 @@ const regenerate = async (interaction: ButtonInteraction, options: Array<string>
     interaction.editReply('Error');
     return;
   }
+  const message = await interaction.fetchReply();
   const discord = {
     // TODO(@byeongal) update api server [ remove ]
-    user_id: 'string',
-    guild_id: 'string',
-    channel_id: 'string',
-    message_id: 'string',
+    user_id: interaction.user.id,
+    guild_id: interaction.guildId,
+    channel_id: interaction.channelId,
+    message_id: message.id,
   };
   params.seed = randomUInt32();
   const data = { discord, params };
